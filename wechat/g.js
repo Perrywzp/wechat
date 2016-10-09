@@ -4,9 +4,9 @@ var sha1 = require('sha1');
 var getRawBody = require('raw-body');
 var Wechat = require('./wechat');
 var util = require('./util');
-module.exports = function (opts) {
+module.exports = function (opts, handler) {
 
-    // var wechat = new Wechat(opts); // 管理票据的更新和检查
+    var wechat = new Wechat(opts); // 管理票据的更新和检查
 
     return function *(next) {
         var that = this;
@@ -47,30 +47,14 @@ module.exports = function (opts) {
             });
 
             var content = yield util.parseXMLAsync(data);
-
-            console.log(content);
-
             var message = util.formatMessage(content.xml);
 
-            console.log(message);
+            this.weixin = message;
+            yield handler.call(this, next);
+
+            wechat.reply.call(this);
 
 
-            if (message.MsgType === 'event') {
-                if (message.Event === 'subscribe') {
-                    var now = new Date().getTime();
-                    var reply;
-
-                    that.staus = 200;
-                    that.type = 'application/xml';
-                    reply =
-
-                    console.log(reply);
-
-
-                    that.body = reply;
-                    return;
-                }
-            }
         }
 
     };
